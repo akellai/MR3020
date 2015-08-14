@@ -1,0 +1,77 @@
+--- a/doc/man2html.c
++++ b/doc/man2html.c
+@@ -3027,7 +3027,7 @@ int main(int argc, char **argv)
+ 	/* &nbsp; for mosaic users */
+ 	printf("<HR>\n<A NAME=\"index\">&nbsp;</A><H2>Index</H2>\n<DL>\n");
+ 	manidx[mip]=0;
+-	printf(manidx);
++	printf("%i",manidx);
+ 	if (subs) printf("</DL>\n");
+ 	printf("</DL>\n");
+ 	print_sig();
+--- a/drivers/lirc_dev/lirc_dev.c
++++ b/drivers/lirc_dev/lirc_dev.c
+@@ -620,7 +620,7 @@ EXPORT_SYMBOL(lirc_dev_fop_close);
+ 
+ unsigned int lirc_dev_fop_poll(struct file *file, poll_table *wait)
+ {
+-	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
++	struct irctl *ir = irctls[iminor(file->f_path.dentry->d_inode)];
+ 	unsigned int ret;
+ 
+ 	if (!ir) {
+@@ -666,7 +666,7 @@ long lirc_dev_fop_ioctl(struct file *fil
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 35)
+ 	struct irctl *ir = irctls[iminor(inode)];
+ #else
+-	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
++	struct irctl *ir = irctls[iminor(file->f_path.dentry->d_inode)];
+ #endif
+ 	if (!ir) {
+ 		printk(KERN_ERR "lirc_dev: %s: no irctl found!\n", __func__);
+@@ -751,7 +751,7 @@ ssize_t lirc_dev_fop_read(struct file *f
+ 			  size_t length,
+ 			  loff_t *ppos)
+ {
+-	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
++	struct irctl *ir = irctls[iminor(file->f_path.dentry->d_inode)];
+ 	unsigned char *buf;
+ 	int ret = 0, written = 0;
+ 	DECLARE_WAITQUEUE(wait, current);
+@@ -852,10 +852,10 @@ void *lirc_get_pdata(struct file *file)
+ {
+ 	void *data = NULL;
+ 
+-	if (file && file->f_dentry && file->f_dentry->d_inode &&
+-	    file->f_dentry->d_inode->i_rdev) {
++	if (file && file->f_path.dentry && file->f_path.dentry->d_inode &&
++	    file->f_path.dentry->d_inode->i_rdev) {
+ 		struct irctl *ir;
+-		ir = irctls[iminor(file->f_dentry->d_inode)];
++		ir = irctls[iminor(file->f_path.dentry->d_inode)];
+ 		data = ir->d.data;
+ 	}
+ 
+@@ -867,7 +867,7 @@ EXPORT_SYMBOL(lirc_get_pdata);
+ ssize_t lirc_dev_fop_write(struct file *file, const char *buffer,
+ 			   size_t length, loff_t *ppos)
+ {
+-	struct irctl *ir = irctls[iminor(file->f_dentry->d_inode)];
++	struct irctl *ir = irctls[iminor(file->f_path.dentry->d_inode)];
+ 
+ 	if (!ir) {
+ 		printk(KERN_ERR "%s: called with invalid irctl\n", __func__);
+--- a/drivers/lirc_serial/lirc_serial.c
++++ b/drivers/lirc_serial/lirc_serial.c
+@@ -376,10 +376,7 @@ static int init_port(void)
+ 		}
+ 
+ 		gpio_direction_input(gpio_in_pin);
+-		//irq = gpio_to_irq(gpio_in_pin);
+-		//irq = 0x20 + gpio_in_pin;;
+-		irq = 10;
+-		//irq = -1;
++		irq = gpio_to_irq(gpio_in_pin);
+ 	}
+ 
+ 	gpio_direction_output(gpio_out_pin, 0);

@@ -14,8 +14,8 @@ PKG_NAME:=lirc
 PKG_VERSION:=0.9.0
 PKG_RELEASE:=1
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
-PKG_SOURCE_URL:=@SF/${PKG_NAME}
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=http://kent.dl.sourceforge.net/project/lirc/LIRC/0.9.0/
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -23,12 +23,13 @@ define Package/lirc/Default
 	SECTION:=utils
 	CATEGORY:=Utilities
 	URL:=http://lirc.org/
+	PKGARCH:=ar71xx
 endef
 
 define Package/lirc
 	$(call Package/lirc/Default)
 	TITLE:=LIRC - Linux Infrared Remote Control
-	DEPENDS:=@!LINUX_2_4
+#	DEPENDS:=@!LINUX_2_4
 	MENU:=1
 endef
 
@@ -44,7 +45,7 @@ define Package/lirc/config
 	config LIRC_DRIVER
 		string
 		prompt "Driver to be complined with LIRC Daemon" if PACKAGE_lirc
-		default none
+		default com1
 endef
 
 define  Package/lircdaemonadd
